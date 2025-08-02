@@ -1,0 +1,3 @@
+# Ignore Angular environment files
+client/src/environments/environment.ts
+client/src/environments/environment.prod.ts
