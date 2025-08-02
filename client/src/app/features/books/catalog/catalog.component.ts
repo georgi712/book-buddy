@@ -1,7 +1,9 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-catalog',
+  imports: [CommonModule],
   templateUrl: './catalog.component.html',
 })
 export class CatalogComponent {

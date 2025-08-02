@@ -10,16 +10,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/books/catalog/catalog.component').then(c => c.CatalogComponent)
   },
   {
-    path: 'books/:id',
+    path: 'books/details/:id',
     loadComponent: () => import('./features/books/details/book-details/book-details.component').then(c => c.BookDetailsComponent)
-  },
-  {
-    path: 'books/create',
-    loadComponent: () => import('./features/books/manage/create-book/create-book.component').then(c => c.CreateBookComponent)
   },
   {
     path: 'books/edit/:id',
     loadComponent: () => import('./features/books/manage/edit-book/edit-book.component').then(c => c.EditBookComponent)
+  },
+  {
+    path: 'books/create',
+    loadComponent: () => import('./features/books/manage/create-book/create-book.component').then(c => c.CreateBookComponent)
   },
   {
     path: 'profile',

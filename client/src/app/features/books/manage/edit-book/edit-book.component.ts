@@ -1,7 +1,9 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-edit-book',
+  imports: [CommonModule],
   templateUrl: './edit-book.component.html',
 })
 export class EditBookComponent {
