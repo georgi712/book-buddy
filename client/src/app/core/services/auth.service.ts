@@ -19,6 +19,8 @@ export class AuthService {
     private currentUserSubject = new BehaviorSubject<User | null>(null);
     public currentUser$ = this.currentUserSubject.asObservable();
 
+    public user$ = this.currentUserSubject.asObservable();
+
     constructor(private auth: Auth, private userService: UserService) {
         this.listenToAuthChanges();
     }

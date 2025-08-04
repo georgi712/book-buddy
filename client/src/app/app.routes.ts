@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 
 export const routes: Routes = [
   {
@@ -15,22 +17,27 @@ export const routes: Routes = [
   },
   {
     path: 'books/edit/:id',
+    canActivate: [authGuard],
     loadComponent: () => import('./features/books/manage/edit-book/edit-book.component').then(c => c.EditBookComponent)
   },
   {
     path: 'books/create',
+    canActivate: [authGuard],
     loadComponent: () => import('./features/books/manage/create-book/create-book.component').then(c => c.CreateBookComponent)
   },
   {
     path: 'profile',
+    canActivate: [authGuard],
     loadComponent: () => import('./features/user-profile/user-profile.component').then(c => c.UserProfileComponent)
   },
   {
     path: 'login',
+    canActivate: [guestGuard],
     loadComponent: () => import('./features/auth/login/login.component').then(c => c.LoginComponent)
   },
   {
     path: 'register',
+    canActivate: [guestGuard],
     loadComponent: () => import('./features/auth/register/register.component').then(c => c.RegisterComponent)
   },
   {
