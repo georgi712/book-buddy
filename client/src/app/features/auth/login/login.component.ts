@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { AuthService } from '../../../core/services';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, ],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -57,7 +57,7 @@ export class LoginComponent {
       return 'Password is required';
     }
 
-    if (this.password?.errors?.['minlenght']) {
+    if (this.password?.errors?.['minlength']) {
       return 'Password must be atleast 8 characters!';
     }
 

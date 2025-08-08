@@ -1,20 +1,21 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { AuthService } from '../services/auth.service'; 
-import { map } from 'rxjs/operators';
+import { AuthService } from '../services/auth.service';
 
 export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  return authService.user$.pipe(
-    map(user => {
-      if (!user) {
-        return true; 
-      } else {
-        router.navigate(['/']); 
-        return false;
-      }
-    })
-  );
+  if (!authService.authReady()) {
+    return new Promise(resolve => {
+      const check = setInterval(() => {
+        if (authService.authReady()) {
+          clearInterval(check);
+          resolve(authService.user() ? router.createUrlTree(['/']) : true);
+        }
+      }, 50); 
+    });
+  }
+
+  return authService.user() ? router.createUrlTree(['/']) : true;
 };
