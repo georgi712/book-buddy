@@ -152,20 +152,28 @@ export class RegisterComponent {
   }
 
 
-  onSubmit(): void {
-    if (this.registerForm.valid) {
-      const { username, email} = this.registerForm.value;
-      const { password, rePassword } = this.registerForm.value.passwords; 
-      const response = this.authService.register(email, password, username)
+  isSubmitting = false;
 
-      console.log(response);
-      
+onSubmit(): void {
+  if (this.registerForm.valid) {
+    this.isSubmitting = true;
 
-      if (response) {
-        
+    const { username, email } = this.registerForm.value;
+    const { password } = this.registerForm.value.passwords;
+
+    this.authService.register(email, password, username).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.registerForm.reset();
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        console.error('Registration error:', err.message);
       }
-    }
+    });
   }
+}
 
   private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
     const password = control.get('password');

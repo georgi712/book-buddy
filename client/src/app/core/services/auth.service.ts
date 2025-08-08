@@ -39,6 +39,8 @@ export class AuthService {
                   favorites: [],
                   createdAt: new Date()
                 };
+                this.currentUserSubject.next(newUser);
+
                 return this.userService.createUser(newUser);
               })
             );
