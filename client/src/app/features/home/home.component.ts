@@ -1,4 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject, signal, effect } from '@angular/core';
+import { AuthService } from '../../core/services';
+import { BookService } from '../../core/services/book.service';
+import { Book } from '../../core/models';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-home',
@@ -6,27 +10,14 @@ import { Component } from '@angular/core';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent {
-  featuredBooks = [
-    {
-      id: 1,
-      title: 'The Great Gatsby',
-      author: 'F. Scott Fitzgerald',
-      cover: 'assets/images/book1.jpg',
-      rating: 4.5
-    },
-    {
-      id: 2,
-      title: 'To Kill a Mockingbird',
-      author: 'Harper Lee',
-      cover: 'assets/images/book2.jpg',
-      rating: 4.8
-    },
-    {
-      id: 3,
-      title: '1984',
-      author: 'George Orwell',
-      cover: 'assets/images/book3.jpg',
-      rating: 4.3
-    }
-  ];
-} 
+  private authService = inject(AuthService);
+  private bookService = inject(BookService);
+
+  user = this.authService.user;
+  isLoggedIn = computed(() => !!this.user());
+  authReady = this.authService.authReady;
+
+  featuredBooks = toSignal(this.bookService.getFeaturedBooks(), { initialValue: [] });
+  latestBooks = toSignal(this.bookService.getLatestBooks(), { initialValue: [] });
+
+}
