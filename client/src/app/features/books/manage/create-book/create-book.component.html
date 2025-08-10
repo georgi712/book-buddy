@@ -3,13 +3,21 @@
     <div class="bg-white shadow-lg rounded-lg">
       <div class="px-6 py-4 border-b border-gray-200">
         <h1 class="text-2xl font-bold text-gray-900">Add New Book</h1>
-        <p class="mt-1 text-sm text-gray-600">Share your favorite book with the BookBuddy community</p>
+        <p class="mt-1 text-sm text-gray-600">
+          Share your favorite book with the BookBuddy community
+        </p>
       </div>
 
-      <form class="p-6 space-y-6" [formGroup]="createBookForm" (ngSubmit)="onSubmit()">
+      <form
+        class="p-6 space-y-6"
+        [formGroup]="createBookForm"
+        (ngSubmit)="onSubmit()"
+      >
         <!-- Book Title -->
         <div>
-          <label for="title" class="block text-sm font-medium text-gray-700">Book Title *</label>
+          <label for="title" class="block text-sm font-medium text-gray-700"
+            >Book Title *</label
+          >
           <input
             id="title"
             type="text"
@@ -19,13 +27,15 @@
             placeholder="Enter the book title"
           />
           @if (isTitleInvalid) {
-            <p class="mt-1 text-sm text-red-600">{{ titleError }}</p>
+          <p class="mt-1 text-sm text-red-600">{{ titleError }}</p>
           }
         </div>
 
         <!-- Author -->
         <div>
-          <label for="author" class="block text-sm font-medium text-gray-700">Author *</label>
+          <label for="author" class="block text-sm font-medium text-gray-700"
+            >Author *</label
+          >
           <input
             id="author"
             type="text"
@@ -35,14 +45,16 @@
             placeholder="Enter the author's name"
           />
           @if (isAuthorInvalid) {
-            <p class="mt-1 text-sm text-red-600">{{ authorError }}</p>
+          <p class="mt-1 text-sm text-red-600">{{ authorError }}</p>
           }
         </div>
 
         <!-- Genre + Year -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label for="genre" class="block text-sm font-medium text-gray-700">Genre *</label>
+            <label for="genre" class="block text-sm font-medium text-gray-700"
+              >Genre *</label
+            >
             <select
               id="genre"
               formControlName="genre"
@@ -53,12 +65,16 @@
               <option *ngFor="let g of genres" [value]="g">{{ g }}</option>
             </select>
             @if (isGenreInvalid) {
-              <p class="mt-1 text-sm text-red-600">{{ genreError }}</p>
+            <p class="mt-1 text-sm text-red-600">{{ genreError }}</p>
             }
           </div>
 
           <div>
-            <label for="publishedYear" class="block text-sm font-medium text-gray-700">Published Year</label>
+            <label
+              for="publishedYear"
+              class="block text-sm font-medium text-gray-700"
+              >Published Year</label
+            >
             <input
               id="publishedYear"
               type="number"
@@ -68,14 +84,16 @@
               placeholder="e.g., 1925"
             />
             @if (isYearInvalid) {
-              <p class="mt-1 text-sm text-red-600">{{ yearError }}</p>
+            <p class="mt-1 text-sm text-red-600">{{ yearError }}</p>
             }
           </div>
         </div>
 
         <!-- Pages -->
         <div>
-          <label for="pages" class="block text-sm font-medium text-gray-700">Number of Pages</label>
+          <label for="pages" class="block text-sm font-medium text-gray-700"
+            >Number of Pages</label
+          >
           <input
             id="pages"
             type="number"
@@ -85,13 +103,17 @@
             placeholder="e.g., 180"
           />
           @if (isPagesInvalid) {
-            <p class="mt-1 text-sm text-red-600">{{ pagesError }}</p>
+          <p class="mt-1 text-sm text-red-600">{{ pagesError }}</p>
           }
         </div>
 
         <!-- Description -->
         <div>
-          <label for="description" class="block text-sm font-medium text-gray-700">Description *</label>
+          <label
+            for="description"
+            class="block text-sm font-medium text-gray-700"
+            >Description *</label
+          >
           <textarea
             id="description"
             rows="4"
@@ -101,41 +123,20 @@
             placeholder="Write a brief description of the book..."
           ></textarea>
           @if (isDescriptionInvalid) {
-            <p class="mt-1 text-sm text-red-600">{{ descriptionError }}</p>
+          <p class="mt-1 text-sm text-red-600">{{ descriptionError }}</p>
           }
         </div>
 
         <!-- Cover Image Upload -->
         <div>
-          <label class="block text-sm font-medium text-gray-700">Cover Image *</label>
-          <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-            <div class="space-y-1 text-center">
-              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-              <div class="flex text-sm text-gray-600">
-                <label
-                  for="coverImage"
-                  class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
-                >
-                  <span>Upload a file</span>
-                  <input
-                    id="coverImage"
-                    type="file"
-                    accept="image/*"
-                    class="sr-only"
-                    (change)="onFileChange($event)"
-                  />
-                </label>
-                <p class="pl-1">or drag and drop</p>
-              </div>
-              <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+          <label class="block text-sm font-medium text-gray-700"
+            >Cover Image *</label
+          >
+          <app-image-upload formControlName="coverImage"></app-image-upload>
 
-              @if (isCoverInvalid) {
-                <p class="mt-1 text-sm text-red-600">{{ coverError }}</p>
-              }
-            </div>
-          </div>
+          @if (isCoverInvalid) {
+          <p class="mt-1 text-sm text-red-600">{{ coverError }}</p>
+          }
         </div>
 
         <!-- Form Actions -->
@@ -154,14 +155,22 @@
             class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             @if (isSubmitting) {
-              <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-              </svg>
-              Creating...
-            } @else {
-              Add Book
-            }
+            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8H4z"
+              ></path>
+            </svg>
+            Creating... } @else { Add Book }
           </button>
         </div>
       </form>

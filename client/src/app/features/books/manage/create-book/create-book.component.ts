@@ -1,13 +1,17 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import {
+  FormBuilder, FormGroup, ReactiveFormsModule,
+  Validators, AbstractControl, ValidationErrors
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, BookService } from '../../../../core/services';
+import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 
 @Component({
   selector: 'app-create-book',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ImageUploadComponent],
   templateUrl: './create-book.component.html',
 })
 export class CreateBookComponent {
@@ -17,38 +21,24 @@ export class CreateBookComponent {
   private router = inject(Router);
 
   genres = [
-    'Fiction',
-    'Non-Fiction',
-    'Mystery',
-    'Romance',
-    'Science Fiction',
-    'Fantasy',
-    'Biography',
-    'History',
-    'Self-Help',
-    'Poetry'
+    'Fiction','Non-Fiction','Mystery','Romance','Science Fiction',
+    'Fantasy','Biography','History','Self-Help','Poetry'
   ];
 
   isSubmitting = false;
-  selectedFile: File | null = null;
 
   createBookForm: FormGroup = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]],
     author: ['', [Validators.required, Validators.maxLength(80)]],
     genre: ['', [Validators.required]],
-    publishedYear: [
-      '',
-      [yearValidator(1800, new Date().getFullYear())]
-    ],
-    pages: [
-      '',
-      [pagesValidator(1, 10000)]
-    ],
+    publishedYear: ['', [yearValidator(1800, new Date().getFullYear())]],
+    pages: ['', [pagesValidator(1, 10000)]],
     description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(1500)]],
     featured: [false],
-    coverImage: [null, [fileRequiredValidator]]
+    coverImage: [null, [fileRequiredValidator]] // now provided by <app-image-upload>
   });
 
+  // getters
   get title(): AbstractControl | null { return this.createBookForm.get('title'); }
   get author(): AbstractControl | null { return this.createBookForm.get('author'); }
   get genre(): AbstractControl | null { return this.createBookForm.get('genre'); }
@@ -72,18 +62,15 @@ export class CreateBookComponent {
     if (this.title?.errors?.['maxlength']) return 'Title must be at most 120 characters';
     return '';
   }
-
   get authorError(): string {
     if (this.author?.errors?.['required']) return 'Author is required';
     if (this.author?.errors?.['maxlength']) return 'Author must be at most 80 characters';
     return '';
   }
-
   get genreError(): string {
     if (this.genre?.errors?.['required']) return 'Genre is required';
     return '';
   }
-
   get yearError(): string {
     if (this.publishedYear?.errors?.['yearRange']) {
       const { min, max } = this.publishedYear.errors['yearRange'];
@@ -91,44 +78,25 @@ export class CreateBookComponent {
     }
     return '';
   }
-
   get pagesError(): string {
-    if (this.pages?.errors?.['minPages']) {
-      const { min } = this.pages.errors['minPages'];
-      return `Pages must be at least ${min}`;
-    }
-    if (this.pages?.errors?.['maxPages']) {
-      const { max } = this.pages.errors['maxPages'];
-      return `Pages must be at most ${max}`;
-    }
+    if (this.pages?.errors?.['minPages']) return `Pages must be at least ${this.pages.errors['minPages'].min}`;
+    if (this.pages?.errors?.['maxPages']) return `Pages must be at most ${this.pages.errors['maxPages'].max}`;
     if (this.pages?.errors?.['notInteger']) return 'Pages must be a whole number';
     return '';
   }
-
   get descriptionError(): string {
     if (this.description?.errors?.['required']) return 'Description is required';
     if (this.description?.errors?.['minlength']) return 'Description must be at least 10 characters';
     if (this.description?.errors?.['maxlength']) return 'Description must be at most 1500 characters';
     return '';
   }
-
   get coverError(): string {
     if (this.coverImage?.errors?.['fileRequired']) return 'Cover image is required';
     return '';
   }
 
-  onFileChange(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] || null;
-    this.selectedFile = file;
-    this.coverImage?.setValue(file);
-    this.coverImage?.markAsDirty();
-    this.coverImage?.markAsTouched();
-    this.coverImage?.updateValueAndValidity();
-  }
-
   async onSubmit(): Promise<void> {
-    if (this.createBookForm.invalid || !this.selectedFile) {
+    if (this.createBookForm.invalid) {
       this.markFormGroupTouched();
       return;
     }
@@ -139,10 +107,15 @@ export class CreateBookComponent {
       return;
     }
 
+    const { coverImage, ...data } = this.createBookForm.value;
+    const file = coverImage as File | null;
+    if (!file) { // double guard
+      this.coverImage?.setErrors({ fileRequired: true });
+      return;
+    }
+
     this.isSubmitting = true;
     try {
-      const { coverImage, ...data } = this.createBookForm.value;
-
       const newId = await this.bookService.createBook(
         me.id,
         {
@@ -154,9 +127,8 @@ export class CreateBookComponent {
           pages: data.pages || null,
           featured: !!data.featured
         } as any,
-        this.selectedFile
+        file
       );
-
       this.createBookForm.reset();
       this.router.navigate(['/books/details', newId]);
     } catch (err: any) {
@@ -179,7 +151,7 @@ export class CreateBookComponent {
   }
 }
 
-
+// validators
 export function yearValidator(min: number, max: number) {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;
@@ -190,7 +162,6 @@ export function yearValidator(min: number, max: number) {
     return null;
   };
 }
-
 export function pagesValidator(min: number, max: number) {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;
@@ -202,9 +173,7 @@ export function pagesValidator(min: number, max: number) {
     return null;
   };
 }
-
 export function fileRequiredValidator(control: AbstractControl): ValidationErrors | null {
   const file = control.value as File | null;
-  if (!file) return { fileRequired: true };
-  return null;
+  return file ? null : { fileRequired: true };
 }
