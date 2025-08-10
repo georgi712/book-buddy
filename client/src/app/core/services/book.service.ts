@@ -13,7 +13,12 @@ import {
   orderBy,
   limit,
   serverTimestamp,
-  getDoc
+  getDoc,
+  startAfter,
+  endAt,
+  QueryConstraint,
+  getDocs,
+  startAt
 } from '@angular/fire/firestore';
 
 import {
@@ -25,7 +30,7 @@ import {
 } from '@angular/fire/storage';
 
 import { Injectable } from '@angular/core';
-import { Book } from '../models';
+import { Book, BookPage, BookQuery } from '../models';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -37,7 +42,6 @@ export class BookService {
     this.booksRef = collection(this.firestore, 'books') as CollectionReference<Book>;
   }
 
-  // ------- Queries ----------
   getAllBooks(): Observable<Book[]> {
     return collectionData(this.booksRef, { idField: 'id' }).pipe(
       catchError(err => throwError(() => new Error(`Error loading books: ${err?.message || err}`)))
@@ -65,7 +69,41 @@ export class BookService {
     );
   }
 
+  async queryBooks(params: BookQuery): Promise<BookPage<Book>> {
+    const { genre, search, pageSize = 12, cursor = null } = params;
   
+    const qc: QueryConstraint[] = [];
+  
+    if (genre && genre !== 'All') {
+      qc.push(where('genre', '==', genre));
+    }
+  
+    const hasSearch = !!(search && search.trim());
+    if (hasSearch) {
+      const term = search!.trim().toLowerCase();
+  
+      qc.push(orderBy('titleLower'));
+      qc.push(startAt(term));
+      qc.push(endAt(term + '\uf8ff'));// inclusive range
+  
+      if (cursor) qc.push(startAfter(cursor));
+  
+    } else {
+      qc.push(orderBy('createdAt', 'desc'));
+      if (cursor) qc.push(startAfter(cursor));
+    }
+  
+    qc.push(limit(pageSize));
+  
+    const qRef = query(this.booksRef, ...qc);
+    const snap = await getDocs(qRef);
+  
+    const items = snap.docs.map(d => ({ id: d.id, ...(d.data() as Book) }));
+    const nextCursor = snap.docs.length === pageSize ? snap.docs[snap.docs.length - 1] : null;
+  
+    return { items, nextCursor };
+  }
+
   private async uploadCover(file: File, userId: string): Promise<{ imageUrl: string; imagePath: string }> {
     if (!file) throw new Error('No cover file provided.');
     if (!userId) throw new Error('User ID is required for upload.');

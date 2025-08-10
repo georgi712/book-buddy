@@ -7,6 +7,7 @@ import {
 import { Router } from '@angular/router';
 import { AuthService, BookService } from '../../../../core/services';
 import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
+import { serverTimestamp } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-create-book',
@@ -125,7 +126,9 @@ export class CreateBookComponent {
           genre: data.genre,
           publishedYear: data.publishedYear || null,
           pages: data.pages || null,
-          featured: !!data.featured
+          featured: !!data.featured,
+          titleLower: data.title.toLowerCase(),
+          createdAt: serverTimestamp(),
         } as any,
         file
       );
