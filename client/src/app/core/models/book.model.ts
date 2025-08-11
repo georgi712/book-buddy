@@ -6,7 +6,7 @@ export interface Book {
   titleLower: string;
   author: string;
   genre: string;
-  published: string;
+  publishedYear: string;
   numberOfPages: string;
   description: string;
   imageUrl: string;

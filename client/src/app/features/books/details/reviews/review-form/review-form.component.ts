@@ -128,6 +128,7 @@ export class ReviewFormComponent {
   remaining = computed(() => 1000 - (this.form.value.comment?.length ?? 0));
 
   toggle(force?: boolean) {
+    if (!this.auth.user()) return;
     this.open = force ?? !this.open;
   }
 

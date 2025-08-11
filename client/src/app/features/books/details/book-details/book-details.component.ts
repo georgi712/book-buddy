@@ -19,22 +19,18 @@ export class BookDetailsComponent {
   private auth = inject(AuthService);
   private userService = inject(UserService);
 
-  // id$ -> filters out empty/null, emits only when changes
   private bookId$ = this.route.paramMap.pipe(
     map(p => p.get('id')),
     filter((id): id is string => !!id && id.trim().length > 0),
     distinctUntilChanged()
   );
 
-  // loading & error as signals
   loading = signal(true);
   error = signal<string | null>(null);
 
-  // book$ from id$
   private book$ = this.bookId$.pipe(
     switchMap(id => 
       this.bookService.getBookById(id).pipe(
-        // set loading flags
         startWith('__loading__' as any),
         catchError(err => {
           this.error.set(err?.message || 'Failed to load book.');
@@ -44,7 +40,6 @@ export class BookDetailsComponent {
     )
   );
 
-  // turn to signals
   bookId = toSignal(this.bookId$, { initialValue: '' });
   book = toSignal(this.book$, { initialValue: undefined as Book | undefined });
 
@@ -61,7 +56,6 @@ export class BookDetailsComponent {
     });
   }
 
-  // auth-derived signals
   me = this.auth.user;
   isLoggedIn = computed(() => !!this.me());
   isOwner = computed(() => !!this.me()?.id && !!this.book()?.userId && this.me()!.id === this.book()!.userId);
@@ -73,9 +67,21 @@ export class BookDetailsComponent {
     return (this.me()?.favorites ?? []).includes(id);
   });
 
-  starsArray(n: number = 0) {
-    const rating = Math.max(0, Math.min(5, Math.round(n)));
-    return Array(5).fill(0).map((_, i) => i < rating);
+  starsArray(rating: number): ('full' | 'half' | 'empty')[] {
+    const stars: ('full' | 'half' | 'empty')[] = [];
+    const rounded = Math.floor(rating * 2) / 2;
+    
+    for (let i = 1; i <= 5; i++) {
+      if (rounded >= i) {
+        stars.push('full');
+      } else if (rounded + 0.5 >= i && rounded < i) {
+        stars.push('half');
+      } else {
+        stars.push('empty');
+      }
+    }
+    
+    return stars;
   }
 
   async toggleFavorite() {
