@@ -18,7 +18,8 @@ import {
   endAt,
   QueryConstraint,
   getDocs,
-  startAt
+  startAt,
+  docSnapshots
 } from '@angular/fire/firestore';
 
 import {
@@ -32,7 +33,7 @@ import {
 import { Injectable } from '@angular/core';
 import { Book, BookPage, BookQuery } from '../models';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class BookService {
@@ -49,8 +50,9 @@ export class BookService {
   }
 
   getBookById(id: string): Observable<Book | undefined> {
-    const bookDoc = doc(this.booksRef, id);
-    return docData(bookDoc, { idField: 'id' }).pipe(
+    const ref = doc(this.booksRef, id);
+    return docSnapshots(ref).pipe(
+      map(snap => snap.exists() ? ({ id: snap.id, ...(snap.data() as Book) }) : undefined),
       catchError(err => throwError(() => new Error(`Error getting book: ${err?.message || err}`)))
     );
   }
