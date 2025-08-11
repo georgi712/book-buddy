@@ -37,8 +37,8 @@ export class EditBookComponent {
     title: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]],
     author: ['', [Validators.required, Validators.maxLength(80)]],
     genre: ['', [Validators.required]],
-    published: ['', [yearValidator(1800, new Date().getFullYear())]],
-    numberOfPages: ['', [pagesValidator(1, 10000)]],
+    publishedYear: ['', [yearValidator(1800, new Date().getFullYear())]],
+    numberOfPages: ['', [numberOfPagesValidator(1, 10000)]],
     description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(1500)]],
     featured: [false],
     coverImage: [null] // optional on edit
@@ -47,8 +47,8 @@ export class EditBookComponent {
   get title(): AbstractControl | null { return this.editBookForm.get('title'); }
   get author(): AbstractControl | null { return this.editBookForm.get('author'); }
   get genre(): AbstractControl | null { return this.editBookForm.get('genre'); }
-  get published(): AbstractControl | null { return this.editBookForm.get('publishedYear'); }
-  get numberOfPages(): AbstractControl | null { return this.editBookForm.get('pages'); }
+  get publishedYear(): AbstractControl | null { return this.editBookForm.get('publishedYear'); }
+  get numberOfPages(): AbstractControl | null { return this.editBookForm.get('numberOfPages'); }
   get description(): AbstractControl | null { return this.editBookForm.get('description'); }
   get featured(): AbstractControl | null { return this.editBookForm.get('featured'); }
   get coverImage(): AbstractControl | null { return this.editBookForm.get('coverImage'); }
@@ -56,7 +56,7 @@ export class EditBookComponent {
   get isTitleInvalid(): boolean { return !!(this.title?.invalid && (this.title?.dirty || this.title?.touched)); }
   get isAuthorInvalid(): boolean { return !!(this.author?.invalid && (this.author?.dirty || this.author?.touched)); }
   get isGenreInvalid(): boolean { return !!(this.genre?.invalid && (this.genre?.dirty || this.genre?.touched)); }
-  get isYearInvalid(): boolean { return !!(this.published?.invalid && (this.published?.dirty || this.published?.touched)); }
+  get isYearInvalid(): boolean { return !!(this.publishedYear?.invalid && (this.publishedYear?.dirty || this.publishedYear?.touched)); }
   get isPagesInvalid(): boolean { return !!(this.numberOfPages?.invalid && (this.numberOfPages?.dirty || this.numberOfPages?.touched)); }
   get isDescriptionInvalid(): boolean { return !!(this.description?.invalid && (this.description?.dirty || this.description?.touched)); }
 
@@ -76,13 +76,13 @@ export class EditBookComponent {
     return '';
   }
   get yearError(): string {
-    if (this.published?.errors?.['yearRange']) {
-      const { min, max } = this.published.errors['yearRange'];
+    if (this.publishedYear?.errors?.['yearRange']) {
+      const { min, max } = this.publishedYear.errors['yearRange'];
       return `Year must be between ${min} and ${max}`;
     }
     return '';
   }
-  get pagesError(): string {
+  get numberOfPagesError(): string {
     if (this.numberOfPages?.errors?.['minPages']) return `Pages must be at least ${this.numberOfPages.errors['minPages'].min}`;
     if (this.numberOfPages?.errors?.['maxPages']) return `Pages must be at most ${this.numberOfPages.errors['maxPages'].max}`;
     if (this.numberOfPages?.errors?.['notInteger']) return 'Pages must be a whole number';
@@ -109,7 +109,7 @@ export class EditBookComponent {
           title: b.title,
           author: b.author,
           genre: b.genre,
-          published: b.published ?? '',
+          publishedYear: b.publishedYear ?? '',
           numberOfPages: b.numberOfPages ?? '',
           description: b.description,
           featured: !!b.featured,
@@ -144,7 +144,7 @@ export class EditBookComponent {
       author: value.author,
       description: value.description,
       genre: value.genre,
-      published: value.published || null,
+      publishedYear: value.publishedYear || null,
       numberOfPages: value.numberOfPages || null,
       featured: !!value.featured,
       userId: this.currentBook.userId,
@@ -192,7 +192,7 @@ export function yearValidator(min: number, max: number) {
   };
 }
 
-export function pagesValidator(min: number, max: number) {
+export function numberOfPagesValidator(min: number, max: number) {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;
     if (value === null || value === '' || value === undefined) return null;

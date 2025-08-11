@@ -32,8 +32,8 @@ export class CreateBookComponent {
     title: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]],
     author: ['', [Validators.required, Validators.maxLength(80)]],
     genre: ['', [Validators.required]],
-    published: ['', [yearValidator(1800, new Date().getFullYear())]],
-    numberOfPages: ['', [pagesValidator(1, 10000)]],
+    publishedYear: ['', [yearValidator(1800, new Date().getFullYear())]],
+    numberOfPages: ['', [numberOfPagesValidator(1, 10000)]],
     description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(1500)]],
     featured: [false],
     coverImage: [null, [fileRequiredValidator]] // now provided by <app-image-upload>
@@ -43,8 +43,8 @@ export class CreateBookComponent {
   get title(): AbstractControl | null { return this.createBookForm.get('title'); }
   get author(): AbstractControl | null { return this.createBookForm.get('author'); }
   get genre(): AbstractControl | null { return this.createBookForm.get('genre'); }
-  get published(): AbstractControl | null { return this.createBookForm.get('publishedYear'); }
-  get numberOfPages(): AbstractControl | null { return this.createBookForm.get('pages'); }
+  get publishedYear(): AbstractControl | null { return this.createBookForm.get('publishedYear'); }
+  get numberOfPages(): AbstractControl | null { return this.createBookForm.get('numberOfPages'); }
   get description(): AbstractControl | null { return this.createBookForm.get('description'); }
   get featured(): AbstractControl | null { return this.createBookForm.get('featured'); }
   get coverImage(): AbstractControl | null { return this.createBookForm.get('coverImage'); }
@@ -52,7 +52,7 @@ export class CreateBookComponent {
   get isTitleInvalid(): boolean { return !!(this.title?.invalid && (this.title?.dirty || this.title?.touched)); }
   get isAuthorInvalid(): boolean { return !!(this.author?.invalid && (this.author?.dirty || this.author?.touched)); }
   get isGenreInvalid(): boolean { return !!(this.genre?.invalid && (this.genre?.dirty || this.genre?.touched)); }
-  get isYearInvalid(): boolean { return !!(this.published?.invalid && (this.published?.dirty || this.published?.touched)); }
+  get isYearInvalid(): boolean { return !!(this.publishedYear?.invalid && (this.publishedYear?.dirty || this.publishedYear?.touched)); }
   get isPagesInvalid(): boolean { return !!(this.numberOfPages?.invalid && (this.numberOfPages?.dirty || this.numberOfPages?.touched)); }
   get isDescriptionInvalid(): boolean { return !!(this.description?.invalid && (this.description?.dirty || this.description?.touched)); }
   get isCoverInvalid(): boolean { return !!(this.coverImage?.invalid && (this.coverImage?.dirty || this.coverImage?.touched)); }
@@ -73,13 +73,13 @@ export class CreateBookComponent {
     return '';
   }
   get yearError(): string {
-    if (this.published?.errors?.['yearRange']) {
-      const { min, max } = this.published.errors['yearRange'];
+    if (this.publishedYear?.errors?.['yearRange']) {
+      const { min, max } = this.publishedYear.errors['yearRange'];
       return `Year must be between ${min} and ${max}`;
     }
     return '';
   }
-  get pagesError(): string {
+  get numberOfPagesError(): string {
     if (this.numberOfPages?.errors?.['minPages']) return `Pages must be at least ${this.numberOfPages.errors['minPages'].min}`;
     if (this.numberOfPages?.errors?.['maxPages']) return `Pages must be at most ${this.numberOfPages.errors['maxPages'].max}`;
     if (this.numberOfPages?.errors?.['notInteger']) return 'Pages must be a whole number';
@@ -125,7 +125,7 @@ export class CreateBookComponent {
           description: data.description,
           genre: data.genre,
           publishedYear: data.publishedYear || null,
-          pages: data.pages || null,
+          numberOfPages: data.numberOfPages || null,
           featured: !!data.featured,
           titleLower: data.title.toLowerCase(),
           createdAt: serverTimestamp(),
@@ -165,7 +165,7 @@ export function yearValidator(min: number, max: number) {
     return null;
   };
 }
-export function pagesValidator(min: number, max: number) {
+export function numberOfPagesValidator(min: number, max: number) {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;
     if (value === null || value === '' || value === undefined) return null;

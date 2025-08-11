@@ -63,7 +63,7 @@
             <input
               id="publishedYear"
               type="number"
-              formControlName="published"
+              formControlName="publishedYear"
               [class.border-red-500]="isYearInvalid"
               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               placeholder="e.g., 1925"
@@ -76,9 +76,9 @@
 
         <!-- Pages -->
         <div>
-          <label for="pages" class="block text-sm font-medium text-gray-700">Number of Pages</label>
+          <label for="numberOfPages" class="block text-sm font-medium text-gray-700">Number of Pages</label>
           <input
-            id="pages"
+            id="numberOfPages"
             type="number"
             formControlName="numberOfPages"
             [class.border-red-500]="isPagesInvalid"
@@ -86,7 +86,7 @@
             placeholder="e.g., 180"
           />
           @if (isPagesInvalid) {
-            <p class="mt-1 text-sm text-red-600">{{ pagesError }}</p>
+            <p class="mt-1 text-sm text-red-600">{{ numberOfPagesError }}</p>
           }
         </div>
 
