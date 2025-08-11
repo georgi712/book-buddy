@@ -110,7 +110,7 @@ export class CreateBookComponent {
 
     const { coverImage, ...data } = this.createBookForm.value;
     const file = coverImage as File | null;
-    if (!file) { // double guard
+    if (!file) { 
       this.coverImage?.setErrors({ fileRequired: true });
       return;
     }
