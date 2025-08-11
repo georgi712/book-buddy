@@ -1,48 +1,103 @@
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map, filter, distinctUntilChanged, switchMap, catchError, of, startWith } from 'rxjs';
+import { Book } from '../../../../core/models';
+import { BookService, AuthService, UserService } from '../../../../core/services';
+import { ReviewsListComponent } from '../reviews/review-list/review-list.component';
 
 @Component({
-  imports:[CommonModule],
   selector: 'app-book-details',
+  standalone: true,
+  imports: [CommonModule, RouterLink, ReviewsListComponent],
   templateUrl: './book-details.component.html',
 })
 export class BookDetailsComponent {
-  book = {
-    id: 1,
-    title: 'The Great Gatsby',
-    author: 'F. Scott Fitzgerald',
-    cover: 'assets/images/book1.jpg',
-    description: 'Set in the Jazz Age on Long Island, near New York City, the novel depicts first-person narrator Nick Carraway\'s interactions with mysterious millionaire Jay Gatsby and Gatsby\'s obsession to reunite with his former lover, the beautiful former debutante Daisy Buchanan.',
-    rating: 4.5,
-    genre: 'Fiction',
-    publishedYear: 1925,
-    pages: 180
-  };
+  private route = inject(ActivatedRoute);
+  private bookService = inject(BookService);
+  private auth = inject(AuthService);
+  private userService = inject(UserService);
 
-  reviews = [
-    {
-      id: 1,
-      username: 'Sarah Johnson',
-      avatar: 'assets/images/avatar1.jpg',
-      rating: 5,
-      comment: 'A masterpiece of American literature. Fitzgerald\'s prose is absolutely beautiful and the story is timeless.',
-      date: '2024-01-15'
-    },
-    {
-      id: 2,
-      username: 'Mike Chen',
-      avatar: 'assets/images/avatar2.jpg',
-      rating: 4,
-      comment: 'Great book with complex characters. The symbolism throughout is really well done.',
-      date: '2024-01-10'
-    },
-    {
-      id: 3,
-      username: 'Emma Davis',
-      avatar: 'assets/images/avatar3.jpg',
-      rating: 5,
-      comment: 'One of my all-time favorites. The way Fitzgerald captures the American Dream is brilliant.',
-      date: '2024-01-05'
+  // id$ -> filters out empty/null, emits only when changes
+  private bookId$ = this.route.paramMap.pipe(
+    map(p => p.get('id')),
+    filter((id): id is string => !!id && id.trim().length > 0),
+    distinctUntilChanged()
+  );
+
+  // loading & error as signals
+  loading = signal(true);
+  error = signal<string | null>(null);
+
+  // book$ from id$
+  private book$ = this.bookId$.pipe(
+    switchMap(id => 
+      this.bookService.getBookById(id).pipe(
+        // set loading flags
+        startWith('__loading__' as any),
+        catchError(err => {
+          this.error.set(err?.message || 'Failed to load book.');
+          return of(undefined as Book | undefined);
+        })
+      )
+    )
+  );
+
+  // turn to signals
+  bookId = toSignal(this.bookId$, { initialValue: '' });
+  book = toSignal(this.book$, { initialValue: undefined as Book | undefined });
+
+  constructor() {
+    // react to book changes to manage loading state
+    // when stream emits the special token, show loading
+    this.book$.subscribe(val => {
+      if (val === '__loading__') {
+        this.loading.set(true);
+        this.error.set(null);
+      } else {
+        this.loading.set(false);
+      }
+    });
+  }
+
+  // auth-derived signals
+  me = this.auth.user;
+  isLoggedIn = computed(() => !!this.me());
+  isOwner = computed(() => !!this.me()?.id && !!this.book()?.userId && this.me()!.id === this.book()!.userId);
+
+  isInFavorites = computed(() => {
+    const uid = this.me()?.id;
+    const id = this.bookId();
+    if (!uid || !id) return false;
+    return (this.me()?.favorites ?? []).includes(id);
+  });
+
+  starsArray(n: number = 0) {
+    const rating = Math.max(0, Math.min(5, Math.round(n)));
+    return Array(5).fill(0).map((_, i) => i < rating);
+  }
+
+  async toggleFavorite() {
+    if (!this.isLoggedIn() || !this.bookId()) return;
+    const uid = this.me()!.id;
+    const id = this.bookId();
+    try {
+      if (this.isInFavorites()) await this.userService.removeFavorite(uid, id);
+      else await this.userService.addFavorite(uid, id);
+    } catch (e: any) {
+      console.error('Favorite toggle error:', e?.message || e);
     }
-  ];
-} 
+  }
+
+  share() {
+    const b = this.book();
+    if (!b) return;
+    const url = location.href;
+    if (navigator.share) {
+      navigator.share({ title: b.title, text: `Check out "${b.title}" by ${b.author}`, url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url).then(() => alert('Link copied to clipboard!'));
+    }
+  }
+}

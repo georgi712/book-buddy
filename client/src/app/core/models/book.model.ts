@@ -11,6 +11,8 @@ export interface Book {
   description: string;
   imageUrl: string;
   imagePath: string;
+  avgRaiting: number;
+  reviewsCount: string;
   featured?: boolean;
   createdAt: Timestamp; 
   userId: string;

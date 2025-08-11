@@ -1,8 +1,11 @@
+import { Timestamp } from "@angular/fire/firestore";
+
 export interface Review {
-    id?: string;
-    bookId: string;
-    userId: string;
-    content: string;
-    rating: number; 
-    createdAt: Date;
-  }
+  id?: string; 
+  userId: string,
+  userName: string,
+  userPhoto?: string,
+  rating: number,         
+  comment?: string,
+  createdAt: Timestamp
+}
