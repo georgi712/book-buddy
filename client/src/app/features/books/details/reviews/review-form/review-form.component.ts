@@ -152,7 +152,7 @@ export class ReviewFormComponent {
       await this.reviewService.addReview(this.bookId, {
         userId: me.id,
         userName: me.displayName,
-        userPhoto: me.imageUrl,
+        userPhoto: me.imagePath,
         rating: Number(this.form.value.rating),
         comment: this.form.value.comment || ''
       } as any);

@@ -1,8 +1,11 @@
+import { FieldValue, Timestamp } from "@angular/fire/firestore";
+
 export interface User {
     id?: string; 
     displayName: string;
     email: string;
-    imageUrl?: string; 
+    imagePath?: string; 
     favorites: string[]; 
-    createdAt: Date | null; 
+    createdAt: Timestamp | FieldValue; 
+    bio: string;
 }

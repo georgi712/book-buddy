@@ -6,7 +6,8 @@ import {
   signInWithEmailAndPassword, signOut, User as FirebaseUser, setPersistence,
   browserLocalPersistence
 } from '@angular/fire/auth';
-import { from, switchMap, throwError, Observable, tap } from 'rxjs';
+import { from, switchMap, throwError, Observable, tap, firstValueFrom } from 'rxjs';
+import { serverTimestamp } from '@angular/fire/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -26,20 +27,26 @@ export class AuthService {
     return from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
       switchMap(async (cred) => {
         if (!cred.user) throw new Error('No user returned');
+  
         await updateProfile(cred.user, { displayName });
+  
         const newUser: User = {
           id: cred.user.uid,
           displayName,
           email: cred.user.email ?? '',
-          imageUrl: cred.user.photoURL ?? '',
+          imagePath: cred.user.photoURL ?? '',
+          bio: '',
           favorites: [],
-          createdAt: new Date(),
+          createdAt: serverTimestamp()
         };
+  
         this.firebaseUserSignal.set(cred.user);
         this.appUserSignal.set(newUser);
         this.authReady.set(true);
-        await this.userService.createUser(newUser).toPromise();
-        const fetched = await this.userService.getUser(cred.user.uid).toPromise();
+  
+        await firstValueFrom(this.userService.createUser(newUser));
+  
+        const fetched = await firstValueFrom(this.userService.getUser(cred.user.uid));
         if (fetched) this.appUserSignal.set(fetched);
       }),
       switchMap(() => from(Promise.resolve()))
@@ -73,7 +80,7 @@ export class AuthService {
       if (fbUser) {
         this.firebaseUserSignal.set(fbUser);
         try {
-          const u = await this.userService.getUser(fbUser.uid).toPromise();
+          const u = await firstValueFrom(this.userService.getUser(fbUser.uid));
           this.appUserSignal.set(u ?? null);
         } catch {
           this.appUserSignal.set(null);
@@ -90,5 +97,23 @@ export class AuthService {
 
   getFirebaseUser(): FirebaseUser | null {
     return this.firebaseUserSignal();
+  }
+
+  setUser(user: User | null) {
+    this.appUserSignal.set(user);
+  }
+  
+  patchUser(patch: Partial<User>) {
+    const cur = this.appUserSignal();
+    if (!cur) return;
+    this.appUserSignal.set({ ...cur, ...patch });
+  }
+  
+  async refreshUserFromServer(): Promise<User | null> {
+    const fb = this.firebaseUserSignal();
+    if (!fb?.uid) return null;
+    const fresh = await firstValueFrom(this.userService.getUser(fb.uid));
+    this.appUserSignal.set(fresh ?? null);
+    return fresh ?? null;
   }
 }

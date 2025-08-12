@@ -57,6 +57,11 @@ export class BookService {
     );
   }
 
+  getBooksByUser(userId: string): Observable<Book[]> {
+    const q = query(this.booksRef, where('userId', '==', userId));
+    return collectionData(q, { idField: 'id' }) as Observable<Book[]>;
+  }
+
   getFeaturedBooks(): Observable<Book[]> {
     const q = query(this.booksRef, where('featured', '==', true));
     return collectionData(q, { idField: 'id' }).pipe(
