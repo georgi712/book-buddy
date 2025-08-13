@@ -16,11 +16,11 @@ import { FieldValue, Timestamp } from '@angular/fire/firestore';
       <h2 class="text-2xl font-bold text-gray-800">Reviews</h2>
     </div>
 
-    @if (!reviews() || reviews()!.length === 0) {
+    @if (!displayReviews() || displayReviews()!.length === 0) {
       <p class="text-gray-600">No reviews yet. Be the first to add one!</p>
     } @else {
       <div class="space-y-6">
-        @for (r of reviews(); track r.id) {
+        @for (r of displayReviews(); track r.id) {
           <div class="border-b border-gray-200 pb-6 last:border-b-0">
             <div class="flex items-start gap-4">
               <div class="w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
@@ -33,7 +33,6 @@ import { FieldValue, Timestamp } from '@angular/fire/firestore';
                   <span class="text-sm text-gray-500">{{ toDate(r.createdAt) | date:'mediumDate' }}</span>
                 </div>
 
-                <!-- VIEW MODE -->
                 @if (editingId() !== r.id) {
                   <div class="flex items-center mb-3">
                     <div class="flex">
@@ -61,7 +60,6 @@ import { FieldValue, Timestamp } from '@angular/fire/firestore';
                   }
                 }
 
-                <!-- EDIT MODE -->
                 @if (editingId() === r.id) {
                   <form [formGroup]="editForm" (ngSubmit)="save(r)" class="rounded border p-4 bg-gray-50">
                     <div class="mb-3">
@@ -117,12 +115,19 @@ export class ReviewsListComponent {
 
   bookId = input.required<string>();
 
-  reviews = toSignal(
+  // Live stream from backend
+  private liveReviews = toSignal(
     toObservable(this.bookId).pipe(
       switchMap(id => id ? this.reviewService.getReviewsForBook(id) : of<Review[]>([]))
     ),
     { initialValue: [] as Review[] }
   );
+
+  // Local optimistic override (when editing/deleting)
+  private localOverride = signal<Review[] | null>(null);
+
+  // What the UI shows
+  displayReviews = computed(() => this.localOverride() ?? this.liveReviews());
 
   isLoggedIn = computed(() => !!this.auth.user());
   isOwner = (uid?: string | null) => this.auth.user()?.id && uid && this.auth.user()!.id === uid;
@@ -156,14 +161,26 @@ export class ReviewsListComponent {
 
   async save(r: Review) {
     if (this.editForm.invalid || !this.bookId()) return;
-    this.busyId.set(r.id!);
+
+    const id = r.id!;
+    const prev = this.displayReviews().slice();
+
+    const next = prev.map(item =>
+      item.id === id ? { ...item, rating: this.editForm.value.rating!, comment: this.editForm.value.comment || '' } : item
+    );
+
+    this.busyId.set(id);
+    this.localOverride.set(next); // optimistic
+
     try {
-      await this.reviewService.updateReview(this.bookId(), r.id!, {
+      await this.reviewService.updateReview(this.bookId(), id, {
         rating: this.editForm.value.rating!,
         comment: this.editForm.value.comment || ''
       });
       this.cancelEdit();
+      this.localOverride.set(null); // let live stream take over
     } catch (e) {
+      this.localOverride.set(prev); // rollback
       console.error('Update review error:', e);
     } finally {
       this.busyId.set(null);
@@ -174,10 +191,19 @@ export class ReviewsListComponent {
     if (!this.bookId() || !r.id) return;
     const ok = confirm('Delete this review?');
     if (!ok) return;
-    this.busyId.set(r.id);
+
+    const id = r.id;
+    const prev = this.displayReviews().slice();
+    const next = prev.filter(x => x.id !== id);
+
+    this.busyId.set(id);
+    this.localOverride.set(next); // optimistic
+
     try {
-      await this.reviewService.deleteReview(this.bookId(), r.id);
+      await this.reviewService.deleteReview(this.bookId(), id);
+      this.localOverride.set(null); // live stream will reflect deletion
     } catch (e) {
+      this.localOverride.set(prev); // rollback
       console.error('Delete review error:', e);
     } finally {
       this.busyId.set(null);
@@ -187,9 +213,7 @@ export class ReviewsListComponent {
   toDate(value: Timestamp | FieldValue | Date | undefined): Date | null {
     if (!value) return null;
     if (value instanceof Date) return value;
-    if (typeof (value as any).toDate === 'function') {
-      return (value as any).toDate();
-    }
+    if (typeof (value as any).toDate === 'function') return (value as any).toDate();
     return null;
   }
 
