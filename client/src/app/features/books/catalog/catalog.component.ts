@@ -9,7 +9,7 @@ import { Book } from '../../../core/models';
 
 @Component({
   selector: 'app-catalog',
-  standalone: true,
+  
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './catalog.component.html',
 })

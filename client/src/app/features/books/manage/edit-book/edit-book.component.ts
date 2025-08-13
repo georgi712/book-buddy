@@ -11,7 +11,7 @@ import { ImageUploadComponent } from '../../../../shared/components/image-upload
 
 @Component({
   selector: 'app-edit-book',
-  standalone: true,
+  
   imports: [CommonModule, ReactiveFormsModule, ImageUploadComponent],
   templateUrl: './edit-book.component.html',
 })

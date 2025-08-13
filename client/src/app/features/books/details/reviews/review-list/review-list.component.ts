@@ -6,10 +6,10 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ReviewFormComponent } from '../review-form/review-form.component';
 import { AuthService, ReviewService } from '../../../../../core/services';
 import { Review } from '../../../../../core/models';
+import { FieldValue, Timestamp } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-reviews-list',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, ReviewFormComponent],
   template: `
   <div class="bg-white rounded-lg shadow-lg p-8">
@@ -34,7 +34,7 @@ import { Review } from '../../../../../core/models';
               <div class="flex-1">
                 <div class="flex items-center justify-between mb-2">
                   <h3 class="font-semibold text-gray-800">{{ r.userName || 'User' }}</h3>
-                  <span class="text-sm text-gray-500">{{ r.createdAt?.toDate?.() | date:'mediumDate' }}</span>
+                  <span class="text-sm text-gray-500">{{ toDate(r.createdAt) | date:'mediumDate' }}</span>
                 </div>
 
                 <!-- VIEW MODE -->
@@ -186,6 +186,15 @@ export class ReviewsListComponent {
     } finally {
       this.busyId.set(null);
     }
+  }
+
+  toDate(value: Timestamp | FieldValue | Date | undefined): Date | null {
+    if (!value) return null;
+    if (value instanceof Date) return value;
+    if (typeof (value as any).toDate === 'function') {
+      return (value as any).toDate();
+    }
+    return null;
   }
 
   noop() {}

@@ -11,7 +11,7 @@ import { serverTimestamp } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-create-book',
-  standalone: true,
+  
   imports: [CommonModule, ReactiveFormsModule, ImageUploadComponent],
   templateUrl: './create-book.component.html',
 })

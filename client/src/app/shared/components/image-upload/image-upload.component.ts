@@ -4,7 +4,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({
   selector: 'app-image-upload',
-  standalone: true,
+  
   imports: [CommonModule],
   providers: [{
     provide: NG_VALUE_ACCESSOR,

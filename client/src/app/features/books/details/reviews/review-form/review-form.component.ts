@@ -6,7 +6,7 @@ import { AuthService, ReviewService } from '../../../../../core/services';
 
 @Component({
   selector: 'app-review-form',
-  standalone: true,
+  
   imports: [CommonModule, ReactiveFormsModule],
   template: `
   <div class="w-full max-w-xl">
