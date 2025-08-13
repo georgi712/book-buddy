@@ -89,6 +89,7 @@ Clone the repository and install dependencies:
 
 ```bash
 git clone https://github.com/georgi712/book-buddy.git
+cd book-buddy
 cd client
 npm install
 ```
