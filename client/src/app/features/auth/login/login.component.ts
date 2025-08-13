@@ -8,7 +8,6 @@ import { AuthService, NotificationService } from '../../../core/services';
   selector: 'app-login',
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
   private auth = inject(AuthService);

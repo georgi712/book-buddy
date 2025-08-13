@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {
   Firestore, collection, doc, addDoc, updateDoc, deleteDoc,
   CollectionReference, collectionData, query, orderBy, serverTimestamp,
-  runTransaction
+  runTransaction,
 } from '@angular/fire/firestore';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -86,7 +86,7 @@ async deleteReview(bookId: string, reviewId: string): Promise<void> {
 
   await runTransaction(this.firestore, async (tx) => {
     const revSnap = await tx.get(reviewDoc);
-    if (!revSnap.exists()) return; // already removed
+    if (!revSnap.exists()) return; 
     const rating = (revSnap.data() as Review).rating ?? 0;
 
     const bookSnap = await tx.get(bookDoc);

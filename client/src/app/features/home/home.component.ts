@@ -1,7 +1,6 @@
 import { Component, computed, inject, signal, effect } from '@angular/core';
 import { AuthService } from '../../core/services';
 import { BookService } from '../../core/services/book.service';
-import { Book } from '../../core/models';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
@@ -9,8 +8,7 @@ import { DecimalPipe } from '@angular/common';
 @Component({
   selector: 'app-home',
   imports: [RouterLink, DecimalPipe],
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  templateUrl: './home.component.html'
 })
 export class HomeComponent {
   private authService = inject(AuthService);

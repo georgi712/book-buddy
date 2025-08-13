@@ -6,14 +6,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AuthService, UserService } from '../../core/services';
 import { BookService } from '../../core/services/book.service';
-import { ImageUploadComponent } from '../../shared/components/image-upload/image-upload.component';
 import { Book } from '../../core/models';
 import { NotificationService } from '../../core/services/notification.service';
 import { UserProfileEditComponent } from './user-profile-edit/user-profile-edit.component';
 
 @Component({
   selector: 'app-user-profile',
-  
   imports: [CommonModule, ReactiveFormsModule, RouterLink, UserProfileEditComponent,],
   templateUrl: './user-profile.component.html'
 })

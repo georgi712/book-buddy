@@ -9,8 +9,7 @@ import { getPasswordStrength, PasswordStrength } from '../../../utils/password-s
 @Component({
   selector: 'app-register',
   imports: [ReactiveFormsModule, RouterLink, CommonModule],
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.css']
+  templateUrl: './register.component.html'
 })
 export class RegisterComponent {
   private auth = inject(AuthService);

@@ -19,7 +19,7 @@ import {
   QueryConstraint,
   getDocs,
   startAt,
-  docSnapshots
+  docSnapshots,
 } from '@angular/fire/firestore';
 
 import {
@@ -32,7 +32,7 @@ import {
 
 import { Injectable } from '@angular/core';
 import { Book, BookPage, BookQuery } from '../models';
-import { Observable, throwError } from 'rxjs';
+import { from, Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })

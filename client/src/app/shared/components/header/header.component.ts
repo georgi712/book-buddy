@@ -1,25 +1,36 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal, HostListener } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-header',
-  
+  standalone: true,
   imports: [RouterLink, CommonModule],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.css'
 })
 export class HeaderComponent {
-  private authService = inject(AuthService);
-  private router = inject(Router)
+  private auth = inject(AuthService);
+  private router = inject(Router);
 
-  user = this.authService.user;
+  user = this.auth.user;
   isLoggedIn = computed(() => !!this.user());
-  authReady = this.authService.authReady;
+  authReady = this.auth.authReady;
 
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/'])
+  mobileOpen = signal(false);
+
+  toggleMobile() { this.mobileOpen.update(v => !v); }
+  closeMobile()  { this.mobileOpen.set(false); }
+
+  async logout() {
+    await this.auth.logout().toPromise?.();
+    this.closeMobile();
   }
+
+  constructor() {
+    this.router.events.subscribe(() => this.closeMobile());
+  }
+
+  @HostListener('window:keydown.escape')
+  onEsc() { this.closeMobile(); }
 }
