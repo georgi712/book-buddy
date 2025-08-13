@@ -9,7 +9,7 @@ import { ReviewsListComponent } from '../reviews/review-list/review-list.compone
 
 @Component({
   selector: 'app-book-details',
-  standalone: true,
+  
   imports: [CommonModule, RouterLink, ReviewsListComponent],
   templateUrl: './book-details.component.html',
 })
@@ -27,9 +27,10 @@ export class BookDetailsComponent {
 
   loading = signal(true);
   error = signal<string | null>(null);
+  toggling = signal(false);
 
   private book$ = this.bookId$.pipe(
-    switchMap(id => 
+    switchMap(id =>
       this.bookService.getBookById(id).pipe(
         startWith('__loading__' as any),
         catchError(err => {
@@ -44,8 +45,6 @@ export class BookDetailsComponent {
   book = toSignal(this.book$, { initialValue: undefined as Book | undefined });
 
   constructor() {
-    // react to book changes to manage loading state
-    // when stream emits the special token, show loading
     this.book$.subscribe(val => {
       if (val === '__loading__') {
         this.loading.set(true);
@@ -61,38 +60,44 @@ export class BookDetailsComponent {
   isOwner = computed(() => !!this.me()?.id && !!this.book()?.userId && this.me()!.id === this.book()!.userId);
 
   isInFavorites = computed(() => {
-    const uid = this.me()?.id;
     const id = this.bookId();
-    if (!uid || !id) return false;
-    return (this.me()?.favorites ?? []).includes(id);
+    return !!id && (this.me()?.favorites ?? []).includes(id);
   });
+
 
   starsArray(rating: number): ('full' | 'half' | 'empty')[] {
     const stars: ('full' | 'half' | 'empty')[] = [];
     const rounded = Math.floor(rating * 2) / 2;
-    
     for (let i = 1; i <= 5; i++) {
-      if (rounded >= i) {
-        stars.push('full');
-      } else if (rounded + 0.5 >= i && rounded < i) {
-        stars.push('half');
-      } else {
-        stars.push('empty');
-      }
+      if (rounded >= i) stars.push('full');
+      else if (rounded + 0.5 >= i && rounded < i) stars.push('half');
+      else stars.push('empty');
     }
-    
     return stars;
   }
 
   async toggleFavorite() {
-    if (!this.isLoggedIn() || !this.bookId()) return;
-    const uid = this.me()!.id;
+    if (this.toggling()) return;
+    const user = this.me();
     const id = this.bookId();
+    if (!user?.id || !id) return;
+
+    this.toggling.set(true);
+
+    const prev = user.favorites ?? [];
+    const wasFav = prev.includes(id);
+    const next = wasFav ? prev.filter(b => b !== id) : [...prev, id];
+
+    this.auth.patchUser({ favorites: next });
+
     try {
-      if (this.isInFavorites()) await this.userService.removeFavorite(uid, id);
-      else await this.userService.addFavorite(uid, id);
-    } catch (e: any) {
-      console.error('Favorite toggle error:', e?.message || e);
+      if (wasFav) await this.userService.removeFavorite(user.id, id);
+      else await this.userService.addFavorite(user.id, id);
+    } catch (e) {
+      this.auth.patchUser({ favorites: prev });
+      console.error('Favorite toggle error:', (e as any)?.message || e);
+    } finally {
+      this.toggling.set(false);
     }
   }
 

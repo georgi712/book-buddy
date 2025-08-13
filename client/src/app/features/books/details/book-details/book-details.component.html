@@ -142,6 +142,7 @@
             <button
               (click)="toggleFavorite()"
               [disabled]="!isLoggedIn()"
+              [disabled]="toggling()"
               class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition disabled:opacity-50"
             >
               {{ isInFavorites() ? 'Remove from Library' : 'Add to Library' }}
