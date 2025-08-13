@@ -11,7 +11,7 @@ export interface Book {
   description: string;
   imageUrl: string;
   imagePath: string;
-  avgRaiting: number;
+  avgRating: number;
   reviewsCount: string;
   featured?: boolean;
   createdAt: Timestamp; 
