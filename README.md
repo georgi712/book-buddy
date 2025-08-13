@@ -68,33 +68,28 @@ src/
 
 ## 🔐 Environment Setup
 
-The **Firebase credentials are already included** in `src/environments/environment.ts` so you don't need to set them up manually.  
-These credentials are public — the app is protected by Firestore Security Rules.
-
-`src/environments/environment.ts`:
-```typescript
-export const environment = {
-  production: false,
-  firebase: {
-    apiKey: 'YOUR_PUBLIC_API_KEY',
-    authDomain: 'your-app.firebaseapp.com',
-    projectId: 'your-app',
-    storageBucket: 'your-app.appspot.com',
-    messagingSenderId: '...',
-    appId: '...',
-  }
-};
-```
+You'll need to set up your Firebase credentials in `src/environments/environment.ts`.  
+Create your Firebase project at [Firebase Console](https://console.firebase.google.com/) and add your configuration.
 
 ---
 
 ## 🛠️ Installation
 
+### Prerequisites
+
+Make sure you have Angular CLI installed globally:
+
+```bash
+npm install -g @angular/cli
+```
+
+### Setup
+
 Clone the repository and install dependencies:
 
 ```bash
 git clone https://github.com/your-username/bookbuddy.git
-cd client
+cd bookbuddy
 npm install
 ```
 
