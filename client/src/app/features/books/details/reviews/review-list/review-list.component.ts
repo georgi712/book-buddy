@@ -3,21 +3,17 @@ import { CommonModule } from '@angular/common';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { switchMap, of } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ReviewFormComponent } from '../review-form/review-form.component';
 import { AuthService, ReviewService } from '../../../../../core/services';
 import { Review } from '../../../../../core/models';
 import { FieldValue, Timestamp } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-reviews-list',
-  imports: [CommonModule, ReactiveFormsModule, ReviewFormComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
   <div class="bg-white rounded-lg shadow-lg p-8">
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-bold text-gray-800">Reviews</h2>
-      @if (isLoggedIn()) {
-        <app-review-form [bookId]="bookId()" (submitted)="noop()" />
-      }
     </div>
 
     @if (!reviews() || reviews()!.length === 0) {

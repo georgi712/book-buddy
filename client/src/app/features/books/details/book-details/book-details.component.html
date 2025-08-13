@@ -40,9 +40,11 @@
         <!-- Book Cover -->
         <div class="lg:w-1/3">
           <div class="w-full max-w-sm mx-auto">
-            <img [src]="book()?.imageUrl || '/assets/placeholder-cover.png'"
-                 [alt]="book()?.title"
-                 class="w-full h-auto rounded-lg shadow-md">
+            <img
+              [src]="book()?.imageUrl || '/assets/placeholder-cover.png'"
+              [alt]="book()?.title"
+              class="w-full h-auto rounded-lg shadow-md"
+            >
           </div>
         </div>
 
@@ -51,12 +53,12 @@
           <h1 class="text-4xl font-bold text-gray-800 mb-4">{{ book()?.title }}</h1>
           <p class="text-xl text-gray-600 mb-4">by {{ book()?.author }}</p>
 
+          <!-- Rating -->
           <div class="flex items-center">
-            <!-- Stars -->
             @for (star of starsArray(book()?.avgRating || 0); track $index) {
               @switch (star) {
                 @case ('full') {
-                  <svg class="w-6 h-6 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                  <svg class="w-6 h-6 text-yellow-400 fill-current" viewBox="0 0 20 20" aria-hidden="true">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 
                              3.292a1 1 0 00.95.69h3.462c.969 0 
                              1.371 1.24.588 1.81l-2.8 
@@ -71,30 +73,32 @@
                   </svg>
                 }
                 @case ('half') {
-                  <svg class="w-6 h-6" viewBox="0 0 20 20">
+                  <svg class="w-6 h-6" viewBox="0 0 20 20" aria-hidden="true">
                     <defs>
-                      <linearGradient id="half-grad" x1="0" x2="100%" y1="0" y2="0">
-                        <stop offset="50%" stop-color="#facc15" />
-                        <stop offset="50%" stop-color="#d1d5db" />
+                      <linearGradient [attr.id]="'half-grad-' + $index" x1="0" x2="100%" y1="0" y2="0">
+                        <stop offset="50%" stop-color="#facc15"></stop>
+                        <stop offset="50%" stop-color="#d1d5db"></stop>
                       </linearGradient>
                     </defs>
-                    <path fill="url(#half-grad)" 
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 
-                             0l1.07 3.292a1 1 0 
-                             00.95.69h3.462c.969 0 
-                             1.371 1.24.588 1.81l-2.8 
-                             2.034a1 1 0 00-.364 1.118l1.07 
-                             3.292c.3.921-.755 1.688-1.54 
-                             1.118l-2.8-2.034a1 1 0 
-                             00-1.175 0l-2.8 
-                             2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 
-                             1 0 00-.364-1.118L2.98 
-                             8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 
-                             1 0 00.951-.69l1.07-3.292z"/>
+                    <path
+                      [attr.fill]="'url(#half-grad-' + $index + ')'"
+                      d="M9.049 2.927c.3-.921 1.603-.921 1.902 
+                         0l1.07 3.292a1 1 0 
+                         00.95.69h3.462c.969 0 
+                         1.371 1.24.588 1.81l-2.8 
+                         2.034a1 1 0 00-.364 1.118l1.07 
+                         3.292c.3.921-.755 1.688-1.54 
+                         1.118l-2.8-2.034a1 1 0 
+                         00-1.175 0l-2.8 
+                         2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 
+                         1 0 00-.364-1.118L2.98 
+                         8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 
+                         1 0 00.951-.69l1.07-3.292z"
+                    ></path>
                   </svg>
                 }
                 @case ('empty') {
-                  <svg class="w-6 h-6 text-gray-300 fill-current" viewBox="0 0 20 20">
+                  <svg class="w-6 h-6 text-gray-300 fill-current" viewBox="0 0 20 20" aria-hidden="true">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 
                              0l1.07 3.292a1 1 0 
                              00.95.69h3.462c.969 0 
@@ -111,14 +115,14 @@
                 }
               }
             }
-          
-            <!-- Rating Text -->
+
             <span class="ml-3 text-lg text-gray-700">
               {{ (book()?.avgRating || 0) | number:'1.0-1' }}/5
               ({{ book()?.ratingCount || 0 }} reviews)
             </span>
           </div>
 
+          <!-- Meta -->
           <div class="grid grid-cols-2 gap-4 mb-6">
             <div>
               <span class="text-gray-500">Genre:</span>
@@ -138,11 +142,11 @@
             {{ book()?.description }}
           </p>
 
+          <!-- Actions -->
           <div class="flex gap-4 items-center">
             <button
               (click)="toggleFavorite()"
-              [disabled]="!isLoggedIn()"
-              [disabled]="toggling()"
+              [disabled]="!isLoggedIn() || toggling()"
               class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition disabled:opacity-50"
             >
               {{ isInFavorites() ? 'Remove from Library' : 'Add to Library' }}
@@ -168,7 +172,18 @@
       </div>
     </div>
 
-    <!-- Reviews -->
-    <app-reviews-list [bookId]="bookId()" />
+    @if (isLoggedIn()) {
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      
+      <app-review-form
+        [bookId]="bookId()"
+        (submitted)="onReviewSubmitted()"
+      ></app-review-form>
+      
+    </div>
+    }
+    <!-- Reviews List -->
+    <app-reviews-list [bookId]="bookId()"></app-reviews-list>
+
   }
 </div>

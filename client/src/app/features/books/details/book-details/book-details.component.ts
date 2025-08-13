@@ -6,10 +6,12 @@ import { map, filter, distinctUntilChanged, switchMap, catchError, of, startWith
 import { Book } from '../../../../core/models';
 import { BookService, AuthService, UserService, NotificationService } from '../../../../core/services';
 import { ReviewsListComponent } from '../reviews/review-list/review-list.component';
+import { ReviewFormComponent } from '../reviews/review-form/review-form.component';
 
 @Component({
   selector: 'app-book-details',
-  imports: [CommonModule, RouterLink, ReviewsListComponent],
+  standalone: true,
+  imports: [CommonModule, RouterLink, ReviewsListComponent, ReviewFormComponent], 
   templateUrl: './book-details.component.html',
 })
 export class BookDetailsComponent {
@@ -118,14 +120,17 @@ export class BookDetailsComponent {
 
     const url = location.href;
     if (navigator.share) {
-      navigator
-        .share({ title: b.title, text: `Check out "${b.title}" by ${b.author}`, url })
-        .catch(() => {/* user cancelled; ignore */});
+      navigator.share({ title: b.title, text: `Check out "${b.title}" by ${b.author}`, url }).catch(() => {});
     } else {
       navigator.clipboard
         .writeText(url)
         .then(() => this.notify.success('Link copied to clipboard!', 'Share'))
         .catch(() => this.notify.error('Could not copy link. Please copy it manually.', 'Share'));
     }
+  }
+
+  // Called when the form emits "submitted" (list will live-update if it subscribes to Firestore)
+  onReviewSubmitted() {
+    this.notify.success('Your review was posted.', 'Review');
   }
 }
