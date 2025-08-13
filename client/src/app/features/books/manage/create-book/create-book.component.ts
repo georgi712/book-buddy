@@ -5,9 +5,8 @@ import {
   Validators, AbstractControl, ValidationErrors
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService, BookService } from '../../../../core/services';
+import { AuthService, BookService, NotificationService } from '../../../../core/services';
 import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
-import { serverTimestamp } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-create-book',
@@ -20,6 +19,7 @@ export class CreateBookComponent {
   private authService = inject(AuthService);
   private bookService = inject(BookService);
   private router = inject(Router);
+  private notify = inject(NotificationService);
 
   genres = [
     'Fiction','Non-Fiction','Mystery','Romance','Science Fiction',
@@ -36,10 +36,9 @@ export class CreateBookComponent {
     numberOfPages: ['', [numberOfPagesValidator(1, 10000)]],
     description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(1500)]],
     featured: [false],
-    coverImage: [null, [fileRequiredValidator]] // now provided by <app-image-upload>
+    coverImage: [null, [fileRequiredValidator]] // required on create
   });
 
-  // getters
   get title(): AbstractControl | null { return this.createBookForm.get('title'); }
   get author(): AbstractControl | null { return this.createBookForm.get('author'); }
   get genre(): AbstractControl | null { return this.createBookForm.get('genre'); }
@@ -104,13 +103,13 @@ export class CreateBookComponent {
 
     const me = this.authService.user();
     if (!me?.id) {
-      console.error('You must be logged in');
+      this.notify.error('You must be logged in.');
       return;
     }
 
-    const { coverImage, ...data } = this.createBookForm.value;
+    const { coverImage, ...data } = this.createBookForm.value as any;
     const file = coverImage as File | null;
-    if (!file) { 
+    if (!file) {
       this.coverImage?.setErrors({ fileRequired: true });
       return;
     }
@@ -127,15 +126,16 @@ export class CreateBookComponent {
           publishedYear: data.publishedYear || null,
           numberOfPages: data.numberOfPages || null,
           featured: !!data.featured,
-          titleLower: data.title.toLowerCase(),
-          createdAt: serverTimestamp(),
+          titleLower: (data.title || '').toString().toLowerCase(),
         } as any,
         file
       );
+
+      this.notify.success('Book created successfully!');
       this.createBookForm.reset();
       this.router.navigate(['/books/details', newId]);
     } catch (err: any) {
-      console.error('Create book error:', err?.message || err);
+      this.notify.error(err?.message || 'Failed to create book.');
     } finally {
       this.isSubmitting = false;
     }
@@ -154,7 +154,6 @@ export class CreateBookComponent {
   }
 }
 
-// validators
 export function yearValidator(min: number, max: number) {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;

@@ -5,7 +5,7 @@ import {
   FormBuilder, FormGroup, ReactiveFormsModule,
   Validators, AbstractControl, ValidationErrors
 } from '@angular/forms';
-import { AuthService, BookService } from '../../../../core/services';
+import { AuthService, BookService, NotificationService } from '../../../../core/services';
 import { Book } from '../../../../core/models';
 import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 
@@ -21,6 +21,7 @@ export class EditBookComponent {
   private router = inject(Router);
   private auth = inject(AuthService);
   private books = inject(BookService);
+  private notify = inject(NotificationService); 
 
   genres = [
     'Fiction','Non-Fiction','Mystery','Romance','Science Fiction',
@@ -41,7 +42,7 @@ export class EditBookComponent {
     numberOfPages: ['', [numberOfPagesValidator(1, 10000)]],
     description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(1500)]],
     featured: [false],
-    coverImage: [null] // optional on edit
+    coverImage: [null] 
   });
 
   get title(): AbstractControl | null { return this.editBookForm.get('title'); }
@@ -97,13 +98,18 @@ export class EditBookComponent {
 
   constructor() {
     if (!this.bookId) {
+      this.notify.error('Missing book ID.');
       this.router.navigate(['/books']);
       return;
     }
 
     this.books.getBookById(this.bookId).subscribe({
       next: (b) => {
-        if (!b) { this.router.navigate(['/books']); return; }
+        if (!b) {
+          this.notify.error('Book not found.');
+          this.router.navigate(['/books']);
+          return;
+        }
         this.currentBook = b;
         this.editBookForm.patchValue({
           title: b.title,
@@ -119,21 +125,29 @@ export class EditBookComponent {
 
         const me = this.auth.user();
         if (me?.id && b.userId && me.id !== b.userId) {
+          this.notify.error('You can edit only your own books.');
           this.router.navigate(['/books/details', this.bookId]);
         }
       },
-      error: () => this.router.navigate(['/books'])
+      error: () => {
+        this.notify.error('Failed to load the book.');
+        this.router.navigate(['/books']);
+      }
     });
   }
 
   async onSubmit(): Promise<void> {
     if (this.editBookForm.invalid || !this.currentBook) {
       this.markFormGroupTouched();
+      this.notify.error('Please fix the highlighted fields.');
       return;
     }
   
     const me = this.auth.user();
-    if (!me?.id) return;
+    if (!me?.id) {
+      this.notify.error('You must be logged in.');
+      return;
+    }
   
     const value = this.editBookForm.value;
     const newFile = value.coverImage as File | null;
@@ -154,22 +168,23 @@ export class EditBookComponent {
     this.isSubmitting = true;
     try {
       await this.books.updateBook(
-        this.bookId,         
-        me.id,               
-        patch,               
-        newFile || undefined 
+        this.bookId,
+        me.id,
+        patch,
+        newFile || undefined
       );
+      this.notify.success('Book updated successfully.');
       this.router.navigate(['/books/details', this.bookId]);
     } catch (err: any) {
       console.error('Update book error:', err?.message || err);
+      this.notify.error(err?.message || 'Failed to update book.');
     } finally {
       this.isSubmitting = false;
     }
   }
 
   onCancel(): void {
-    if (this.bookId) this.router.navigate(['/books/details', this.bookId]);
-    else this.router.navigate(['/books']);
+    this.router.navigate(this.bookId ? ['/books/details', this.bookId] : ['/books']);
   }
 
   private markFormGroupTouched(): void {
