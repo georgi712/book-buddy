@@ -1,6 +1,6 @@
 // catalog.component.ts
 import { Component, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -10,7 +10,7 @@ import { Book } from '../../../core/models';
 @Component({
   selector: 'app-catalog',
   
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, DecimalPipe],
   templateUrl: './catalog.component.html',
 })
 export class CatalogComponent {
@@ -85,20 +85,21 @@ export class CatalogComponent {
     this.loadPageAt(i - 1);
   }
 
+  safeRating(value: number | null | undefined): number {
+    const n = Number(value ?? 0);
+    if (Number.isNaN(n)) return 0;
+    return Math.max(0, Math.min(5, n));
+  }
+
   starsArray(rating: number): ('full' | 'half' | 'empty')[] {
-    const stars: ('full' | 'half' | 'empty')[] = [];
-    const rounded = Math.floor(rating * 2) / 2;
-    
+    const r = Math.max(0, Math.min(5, Number(rating) || 0));
+    const rounded = Math.floor(r * 2) / 2;
+    const out: ('full' | 'half' | 'empty')[] = [];
     for (let i = 1; i <= 5; i++) {
-      if (rounded >= i) {
-        stars.push('full');
-      } else if (rounded + 0.5 >= i && rounded < i) {
-        stars.push('half');
-      } else {
-        stars.push('empty');
-      }
+      if (rounded >= i) out.push('full');
+      else if (rounded + 0.5 >= i) out.push('half');
+      else out.push('empty');
     }
-    
-    return stars;
+    return out;
   }
 }
