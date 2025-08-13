@@ -34,7 +34,8 @@ export class AuthService {
           id: cred.user.uid,
           displayName,
           email: cred.user.email ?? '',
-          imagePath: cred.user.photoURL ?? '',
+          imageUrl: cred.user.photoURL ?? '', 
+          imagePath: '',          
           bio: '',
           favorites: [],
           createdAt: serverTimestamp()
