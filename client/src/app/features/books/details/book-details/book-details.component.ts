@@ -4,12 +4,11 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, filter, distinctUntilChanged, switchMap, catchError, of, startWith } from 'rxjs';
 import { Book } from '../../../../core/models';
-import { BookService, AuthService, UserService } from '../../../../core/services';
+import { BookService, AuthService, UserService, NotificationService } from '../../../../core/services';
 import { ReviewsListComponent } from '../reviews/review-list/review-list.component';
 
 @Component({
   selector: 'app-book-details',
-  
   imports: [CommonModule, RouterLink, ReviewsListComponent],
   templateUrl: './book-details.component.html',
 })
@@ -18,6 +17,7 @@ export class BookDetailsComponent {
   private bookService = inject(BookService);
   private auth = inject(AuthService);
   private userService = inject(UserService);
+  private notify = inject(NotificationService);
 
   private bookId$ = this.route.paramMap.pipe(
     map(p => p.get('id')),
@@ -34,7 +34,9 @@ export class BookDetailsComponent {
       this.bookService.getBookById(id).pipe(
         startWith('__loading__' as any),
         catchError(err => {
-          this.error.set(err?.message || 'Failed to load book.');
+          const msg = err?.message || 'Failed to load book.';
+          this.error.set(msg);
+          this.notify.error(msg, 'Load error');
           return of(undefined as Book | undefined);
         })
       )
@@ -64,7 +66,6 @@ export class BookDetailsComponent {
     return !!id && (this.me()?.favorites ?? []).includes(id);
   });
 
-
   starsArray(rating: number): ('full' | 'half' | 'empty')[] {
     const stars: ('full' | 'half' | 'empty')[] = [];
     const rounded = Math.floor(rating * 2) / 2;
@@ -78,9 +79,13 @@ export class BookDetailsComponent {
 
   async toggleFavorite() {
     if (this.toggling()) return;
+
     const user = this.me();
     const id = this.bookId();
-    if (!user?.id || !id) return;
+    if (!user?.id || !id) {
+      this.notify.info('Please sign in to use favorites.');
+      return;
+    }
 
     this.toggling.set(true);
 
@@ -91,11 +96,17 @@ export class BookDetailsComponent {
     this.auth.patchUser({ favorites: next });
 
     try {
-      if (wasFav) await this.userService.removeFavorite(user.id, id);
-      else await this.userService.addFavorite(user.id, id);
-    } catch (e) {
+      if (wasFav) {
+        await this.userService.removeFavorite(user.id, id);
+        this.notify.info('Removed from favorites', 'Favorites');
+      } else {
+        await this.userService.addFavorite(user.id, id);
+        this.notify.success('Added to favorites', 'Favorites');
+      }
+    } catch (e: any) {
       this.auth.patchUser({ favorites: prev });
-      console.error('Favorite toggle error:', (e as any)?.message || e);
+      this.notify.error(e?.message || 'Could not update favorites.', 'Favorites error');
+      console.error('Favorite toggle error:', e?.message || e);
     } finally {
       this.toggling.set(false);
     }
@@ -104,11 +115,17 @@ export class BookDetailsComponent {
   share() {
     const b = this.book();
     if (!b) return;
+
     const url = location.href;
     if (navigator.share) {
-      navigator.share({ title: b.title, text: `Check out "${b.title}" by ${b.author}`, url }).catch(() => {});
+      navigator
+        .share({ title: b.title, text: `Check out "${b.title}" by ${b.author}`, url })
+        .catch(() => {/* user cancelled; ignore */});
     } else {
-      navigator.clipboard.writeText(url).then(() => alert('Link copied to clipboard!'));
+      navigator.clipboard
+        .writeText(url)
+        .then(() => this.notify.success('Link copied to clipboard!', 'Share'))
+        .catch(() => this.notify.error('Could not copy link. Please copy it manually.', 'Share'));
     }
   }
 }
