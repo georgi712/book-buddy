@@ -88,7 +88,7 @@ npm install -g @angular/cli
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/georgi712/book-buddy
+git clone https://github.com/georgi712/book-buddy.git
 cd client
 npm install
 ```
