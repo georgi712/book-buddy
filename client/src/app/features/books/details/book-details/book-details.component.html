@@ -172,16 +172,6 @@
       </div>
     </div>
 
-    @if (isLoggedIn()) {
-    <div class="bg-white rounded-lg shadow p-6 mb-6">
-      
-      <app-review-form
-        [bookId]="bookId()"
-        (submitted)="onReviewSubmitted()"
-      ></app-review-form>
-      
-    </div>
-    }
     <!-- Reviews List -->
     <app-reviews-list [bookId]="bookId()"></app-reviews-list>
 

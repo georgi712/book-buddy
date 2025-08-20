@@ -6,12 +6,11 @@ import { map, filter, distinctUntilChanged, switchMap, catchError, of, startWith
 import { Book } from '../../../../core/models';
 import { BookService, AuthService, UserService, NotificationService } from '../../../../core/services';
 import { ReviewsListComponent } from '../reviews/review-list/review-list.component';
-import { ReviewFormComponent } from '../reviews/review-form/review-form.component';
 
 @Component({
   selector: 'app-book-details',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReviewsListComponent, ReviewFormComponent], 
+  imports: [CommonModule, RouterLink, ReviewsListComponent], 
   templateUrl: './book-details.component.html',
 })
 export class BookDetailsComponent {
