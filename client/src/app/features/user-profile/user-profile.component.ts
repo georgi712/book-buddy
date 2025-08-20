@@ -126,4 +126,23 @@ export class UserProfileComponent {
   onEditCancelled() {
     this.editMode.set(false);
   }
+
+  async deleteMyBook(bookId: string) {
+    const uid = this.me()?.id;
+    if (!uid) {
+      this.notify.error('You must be logged in.');
+      return;
+    }
+  
+    const ok = confirm('Delete this book permanently? This will also remove its cover image.');
+    if (!ok) return;
+  
+    try {
+      await this.books.deleteBook(bookId, uid);
+      this.notify.success('Book deleted.');
+    } catch (e: any) {
+      console.error(e);
+      this.notify.error(e?.message || 'Failed to delete book.');
+    }
+  }
 }
