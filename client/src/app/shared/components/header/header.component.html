@@ -1,4 +1,5 @@
-<header class="bg-white/80 backdrop-blur border-b border-gray-200 dark:bg-gray-900/70 dark:border-gray-800">  <nav class="max-w-screen-xl mx-auto px-4">
+<header class="relative z-40 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800">
+  <nav class="max-w-screen-xl mx-auto px-4">
     <div class="h-16 flex items-center justify-between">
       <!-- Left: Logo -->
       <a routerLink="/" class="flex items-center gap-2">
@@ -19,7 +20,6 @@
           </a>
         </li>
 
-        <!-- Auth placeholders / links -->
         @if (!authReady()) {
           <li class="h-5 w-16 rounded bg-gray-200 animate-pulse dark:bg-gray-700"></li>
           <li class="h-5 w-20 rounded bg-gray-200 animate-pulse dark:bg-gray-700"></li>
@@ -64,12 +64,10 @@
         aria-controls="mobile-menu"
         (click)="toggleMobile()">
         @if (!mobileOpen()) {
-          <!-- hamburger -->
           <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none">
             <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/>
           </svg>
         } @else {
-          <!-- close -->
           <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none">
             <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6l-12 12"/>
           </svg>
@@ -79,7 +77,7 @@
 
     <!-- Mobile: Backdrop -->
     <div
-      class="md:hidden fixed inset-0 bg-black/25 transition-opacity"
+      class="md:hidden fixed inset-0 bg-black/25 transition-opacity z-40"
       *ngIf="mobileOpen()"
       (click)="closeMobile()">
     </div>
@@ -87,7 +85,7 @@
     <!-- Mobile: Panel -->
     <div
       id="mobile-menu"
-      class="md:hidden absolute left-0 right-0 top-16 mx-4 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden
+      class="md:hidden absolute left-0 right-0 top-16 z-50 mx-4 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden
              dark:bg-gray-900 dark:border-gray-800"
       [class.opacity-100]="mobileOpen()"
       [class.translate-y-0]="mobileOpen()"
