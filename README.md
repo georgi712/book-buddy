@@ -5,6 +5,15 @@ It integrates with Firebase for authentication, database, and storage, making it
 
 ---
 
+## 🌐 Live Demo
+
+You can check out the live version of **BookBuddy** here:  
+👉 [BookBuddy Website](https://book-buddy-18f31.web.app/)  
+
+
+---
+
+
 ## 🚀 Tech Stack
 
 - **Frontend Framework:** Angular 17+ with Standalone Components
